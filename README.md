@@ -2,7 +2,7 @@
 - 👀 I’m interested in networking
 - 🌱 I’m currently learning ...
 - 💞️ I’m looking to collaborate on job specifications with awesome Devs
-- 📫 How to reach me Jennifer@vitosolutions.co.za
+- 📫 How to reach me pieter.human@vitosolutions.co.za
 
 <!---
 Vitosolutions/Vitosolutions is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
