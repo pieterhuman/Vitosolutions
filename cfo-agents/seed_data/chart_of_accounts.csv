@@ -1,0 +1,8 @@
+id,code,name,type,tax_type
+coa-200,200,Sales Revenue,REVENUE,OUTPUT
+coa-310,310,Cost of Goods Sold,COGS,INPUT
+coa-404,404,Bank Fees,EXPENSE,INPUT
+coa-420,420,Hosting & SaaS,EXPENSE,INPUT
+coa-477,477,Wages & Salaries,EXPENSE,NONE
+coa-493,493,Travel,EXPENSE,INPUT
+coa-820,820,VAT Payable,LIABILITY,NONE

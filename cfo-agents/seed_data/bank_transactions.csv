@@ -1,0 +1,8 @@
+id,bank_account_id,posted_on,amount,currency,description,counterparty_name,is_reconciled
+bt-001,ba-1,2026-04-30,57500.00,ZAR,INV-001 Acme Corp,Acme Corp,false
+bt-002,ba-1,2026-05-02,86000.00,ZAR,Globex INV-003,Globex Holdings,false
+bt-003,ba-1,2026-04-25,-210000.00,ZAR,Payroll April,PayrollCo,false
+bt-004,ba-1,2026-05-03,-18500.00,ZAR,AWS USA   2026-04,Amazon Web Services,false
+bt-005,ba-1,2026-05-04,-1200.00,ZAR,UBER TRIP 2026-05-03,Uber,false
+bt-006,ba-1,2026-05-05,-345.00,ZAR,Bank charges,Bank,false
+bt-007,ba-1,2026-05-06,-2400.00,ZAR,GOOGLE WORKSPACE,Google,false

@@ -1,0 +1,9 @@
+id,name,is_customer,is_supplier,email
+c-acme,Acme Corp,true,false,ap@acme.example
+c-globex,Globex Holdings,true,false,finance@globex.example
+c-initech,Initech (Pty) Ltd,true,false,billing@initech.example
+c-aws,Amazon Web Services,false,true,
+c-google,Google Workspace,false,true,
+c-payroll,PayrollCo,false,true,
+c-contractor-1,Linda Daniels,false,true,
+c-contractor-2,Sipho Mabaso,false,true,
