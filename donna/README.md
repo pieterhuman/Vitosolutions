@@ -1,5 +1,7 @@
 # Donna Minimal
 
+[![donna-ci](https://github.com/pieterhuman/Vitosolutions/actions/workflows/donna-ci.yml/badge.svg?branch=claude/donna-minimal-mailbox-cmivmc)](https://github.com/pieterhuman/Vitosolutions/actions/workflows/donna-ci.yml)
+
 Set-and-forget mailbox follow-up for a 7-person family office on
 Microsoft 365. Donna watches 7 mailboxes via Microsoft Graph delta
 queries, keeps a ledger of items needing attention, and emails each
