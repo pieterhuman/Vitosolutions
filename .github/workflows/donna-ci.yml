@@ -1,0 +1,30 @@
+name: donna-ci
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["donna/**", ".github/workflows/donna-ci.yml"]
+  pull_request:
+    paths: ["donna/**", ".github/workflows/donna-ci.yml"]
+
+jobs:
+  fixture-suite:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: donna
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Fixture suite (the spec)
+        run: python -m pytest -v
+      - name: Fixtures regenerate cleanly
+        run: |
+          python tests/fixtures/generate.py
+          git diff --exit-code tests/fixtures/messages
+      - name: Dry-run digests render
+        run: python scripts/dry_run_local.py

@@ -19,6 +19,10 @@ class TokenError(Exception):
     pass
 
 
+class TokenExpired(TokenError):
+    pass
+
+
 def _sign(payload: str, key: bytes) -> str:
     return hmac.new(key, payload.encode("utf-8"), hashlib.sha256).hexdigest()
 
@@ -41,5 +45,5 @@ def verify_token(token: str, key: bytes, now_epoch: int) -> tuple[int, int]:
     if not hmac.compare_digest(signature, _sign(payload, key)):
         raise TokenError("bad signature")
     if now_epoch > int(expiry):
-        raise TokenError("token expired")
+        raise TokenExpired("token expired")
     return int(item_id), int(principal_id)

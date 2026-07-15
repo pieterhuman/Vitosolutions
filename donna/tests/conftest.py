@@ -13,6 +13,7 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy.pool import StaticPool
 
+from donna.errors import CursorGone
 from donna.store import Store
 
 FIXTURE_DIR = pathlib.Path(__file__).parent / "fixtures" / "messages"
@@ -45,10 +46,6 @@ def T(iso: str) -> datetime:
         timezone.utc)
 
 
-class CursorGone(Exception):
-    """Synthetic equivalent of Graph HTTP 410 on a delta link."""
-
-
 class FakeGraph:
     """Same surface as donna.graph.GraphClient, fed from fixtures."""
 
@@ -76,8 +73,10 @@ class FakeGraph:
         if delta_link is not None and key in self._gone:
             self._gone.discard(key)
             raise CursorGone(f"410 gone for {folder}")
-        batches = self._queues.get(key, [])
-        messages = batches.pop(0) if batches else []
+        # A real delta sync follows @odata.nextLink until exhausted, so
+        # one call drains every page queued since the last sync.
+        pages = self._queues.pop(key, [])
+        messages = [m for page in pages for m in page]
         self._cursor_seq += 1
         return messages, f"delta-link-{self._cursor_seq}"
 
