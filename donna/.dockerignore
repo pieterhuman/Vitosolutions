@@ -5,3 +5,7 @@ out/
 demo_out/
 local.settings.json
 .venv/
+.git/
+infra/
+scripts/
+*.md

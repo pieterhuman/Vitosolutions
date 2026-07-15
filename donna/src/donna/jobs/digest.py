@@ -99,7 +99,12 @@ def _item_row(item, now: datetime, principal_id: int, token_key: bytes,
         f"<td style='padding:4px 12px 4px 0'>{_e(item.subject)}</td>"
         f"<td style='padding:4px 12px 4px 0'>{_e(item.counterparty_name or item.counterparty_smtp)}</td>"
         f"<td style='padding:4px 12px 4px 0;white-space:nowrap'>{_age(now, item.anchor_utc)}</td>"
-        f"<td style='padding:4px 0'><a href='{base_url}/close/{token}'>mark done</a></td>"
+        "<td style='padding:4px 0'>"
+        f"<form method='post' action='{base_url}/close/{token}' "
+        "style='display:inline;margin:0'>"
+        "<button type='submit' style='font:inherit;color:#0e6b60;"
+        "background:none;border:none;padding:0;cursor:pointer;"
+        "text-decoration:underline'>mark done</button></form></td>"
         "</tr>"
     )
 

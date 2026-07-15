@@ -28,3 +28,37 @@ jobs:
           git diff --exit-code tests/fixtures/messages
       - name: Dry-run digests render
         run: python scripts/dry_run_local.py
+      - name: Demo pipeline smoke test (Docker-free)
+        run: python -m demo.smoke_test
+
+  docker-demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: donna
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the demo stack
+        run: docker compose up --build -d
+      - name: Wait for the app to answer
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/ > /tmp/index.html && break
+            sleep 2
+          done
+          grep -q "Donna Minimal — local demo" /tmp/index.html
+      - name: Mark-done link is a real POST, and it actually closes the item
+        run: |
+          TOKEN=$(curl -sf http://localhost:8080/digest/alice \
+            | grep -oE "action='[^']*?/close/[^']+'" | head -1 \
+            | sed -E "s#.*/close/([^']+)'#\1#")
+          test -n "$TOKEN"
+          STATUS=$(curl -s -o /tmp/close.json -w '%{http_code}' \
+            -X POST "http://localhost:8080/close/$TOKEN")
+          test "$STATUS" = "200"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

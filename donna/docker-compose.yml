@@ -1,0 +1,36 @@
+# Local MVP demo — synthetic data only, nothing here talks to Azure or
+# a real mailbox. See README.md "Local demo (Docker)".
+#
+#   docker compose up --build
+#   open http://localhost:8080
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: donna
+      POSTGRES_USER: donna
+      # Local, ephemeral, container-only — never used outside this
+      # compose file and never the credential used against Azure.
+      POSTGRES_PASSWORD: donna-demo-local-only
+    volumes:
+      - donna_demo_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U donna"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DONNA_DB_URL: postgresql+psycopg://donna:donna-demo-local-only@db:5432/donna
+      DONNA_DEMO_HMAC_KEY: local-demo-signing-key-not-for-production
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+
+volumes:
+  donna_demo_pg:

@@ -76,6 +76,7 @@ senders, or task titles.
 src/donna/            engine, ledger, jobs (poll / digest / urgent / heartbeat / suggest)
 function_app.py       Azure Functions entry points (timers UTC + POST /api/close/{token})
 tests/                the fixture suite — 22 synthetic Graph messages; the suite is the spec
+demo/                 local Docker demo — synthetic seed + a tiny HTTP server, not production
 infra/                Bicep (Function App, Postgres Burstable, Key Vault, alert rule) + SQL trigger
 OPERATOR.md           Entra app registration, admin consent, Application Access Policy
 RUNBOOK.md            onboarding, VIP/exclusion edits, heartbeat alert, quarterly re-verification
@@ -93,3 +94,38 @@ pip install -r requirements-dev.txt
 python -m pytest                     # the fixture suite is the spec
 python scripts/dry_run_local.py      # renders all 7 digests into ./out/
 ```
+
+## Local demo (Docker)
+
+For clicking through the MVP — or showing it to the client — without
+installing Python or Postgres locally:
+
+```bash
+docker compose up --build
+open http://localhost:8080
+```
+
+This runs the real poll → urgent → digest → suggest pipeline against a
+synthetic day of mail (`demo/seed.py` — same shape of data as the
+fixture suite, timestamped relative to when you start the container so
+it always looks current) and a real Postgres container, and serves the
+results over plain HTTP:
+
+- **Briefings** — one link per person, rendered exactly as the digest
+  job produces them, including a working "mark done" button that hits
+  the real `POST /close/{token}` endpoint. Click it, then use
+  **Re-run poll + refresh briefings** on the home page to see the item
+  drop off the list.
+- **Weekly recurring-pattern review** — the suggestion engine's report;
+  the demo dataset includes a pattern that's already crossed the review
+  threshold, so there's something to look at immediately.
+- **Urgent (Teams webhook payload)** — the exact JSON that would be
+  POSTed to the Teams webhook, so you can see the counts-only payload
+  discipline directly.
+- **Reset demo data** — wipes the ledger and reseeds from scratch, for
+  repeat walkthroughs.
+
+`demo/server.py` bypasses `donna.config` entirely — no Managed
+Identity, no Key Vault, no real Graph calls, nothing outside the two
+containers. It exists only for this demo; production runs on Azure
+Functions via `function_app.py`, unaffected by anything in `demo/`.

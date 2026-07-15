@@ -1,0 +1,4 @@
+# Local Docker demo only — bypasses donna.config entirely, so no
+# azure-* packages or requests are needed. See demo/server.py.
+SQLAlchemy>=2.0
+psycopg[binary]>=3.1
