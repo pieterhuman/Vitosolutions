@@ -59,6 +59,43 @@ Header patterns are `Header-Name` (presence) or `Header-Name:regex`
 (value match). Exclusions apply at item creation; they do not close
 existing items.
 
+## Reviewing recurring-pattern suggestions
+
+Every Monday at 05:00 UTC, the `suggest` job writes a report (see
+`suggestion_report_dir` in CONFIG.md) listing senders that keep
+answering a counterparty's mail from a different address, three or
+more times. This is not an AI classifier — it's a count. It never
+changes any item's state; it only ever proposes a `known_alias` row for
+you to approve or ignore.
+
+**To approve** (the report gives you this exact statement — copy it):
+```sql
+INSERT INTO known_alias (counterparty_smtp, alias_smtp, label, enabled)
+VALUES ('lawyer@sterlinglaw.example', 'assistant@sterlinglaw.example',
+        'suggested', true);
+```
+From the next poll onward, replies from that address on threads with
+that counterparty close the item exactly like a reply from the
+counterparty itself. Items already sitting in `uncertain` from before
+you approved it are **not** retroactively closed — only new occurrences
+of the pattern are affected. If you want to close the backlog too, use
+each item's mark-as-done link, or close them individually with SQL.
+
+**To dismiss** (stop it from reappearing in future reports without
+approving it):
+```sql
+UPDATE suggestion SET status = 'dismissed'
+WHERE counterparty_smtp = 'lawyer@sterlinglaw.example'
+  AND signal_smtp = 'assistant@sterlinglaw.example';
+```
+
+**To revoke an alias you approved earlier:**
+```sql
+UPDATE known_alias SET enabled = false
+WHERE counterparty_smtp = 'lawyer@sterlinglaw.example'
+  AND alias_smtp = 'assistant@sterlinglaw.example';
+```
+
 ## What the heartbeat alert means
 
 `DONNA_HEARTBEAT_MISSED` fires at 04:45/14:45 UTC when the 04:30/14:30

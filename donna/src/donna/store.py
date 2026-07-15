@@ -62,6 +62,11 @@ open_item = sa.Table(
     sa.Column("first_seen_utc", sa.DateTime(timezone=True), nullable=False),
     sa.Column("last_eval_utc", sa.DateTime(timezone=True), nullable=False),
     sa.Column("urgent_alerted_utc", sa.DateTime(timezone=True), nullable=True),
+    # Set when a reply arrives from neither the counterparty nor a
+    # monitored principal. Plaintext by design (same trust boundary as
+    # subject/counterparty_smtp above) so the suggest job can group
+    # recurring patterns; cleared once the item leaves UNCERTAIN.
+    sa.Column("uncertain_signal_smtp", sa.String(320), nullable=True),
     sa.UniqueConstraint("principal_id", "kind", "internet_message_id",
                         name="uq_item_principal_kind_msgid"),
 )
@@ -94,6 +99,42 @@ exclusion_rule = sa.Table(
     # sender | domain | header | subject_regex
     sa.Column("pattern", sa.String(512), nullable=False),
     sa.Column("enabled", sa.Boolean, nullable=False, default=True),
+)
+
+# A known_alias row is the only thing a suggestion is allowed to become:
+# a plain deterministic rule the poll job checks like any other. Once
+# approved, replies from alias_smtp on threads with counterparty_smtp
+# are treated as the counterparty replying — same as vip_contact and
+# exclusion_rule, this is human-authored data, never a model decision.
+known_alias = sa.Table(
+    "known_alias", metadata,
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("counterparty_smtp", sa.String(320), nullable=False),
+    sa.Column("alias_smtp", sa.String(320), nullable=False),
+    sa.Column("label", sa.String(200), nullable=False, default=""),
+    sa.Column("enabled", sa.Boolean, nullable=False, default=True),
+    sa.UniqueConstraint("counterparty_smtp", "alias_smtp",
+                        name="uq_known_alias_pair"),
+)
+
+# Advisory only: a count of how often a pattern has recurred in the
+# uncertain bucket. Nothing reads this table except the suggest job and
+# whatever renders its report. It has no path into open_item.state.
+suggestion = sa.Table(
+    "suggestion", metadata,
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("kind", sa.String(32), nullable=False),  # recurring_alias
+    sa.Column("counterparty_smtp", sa.String(320), nullable=False),
+    sa.Column("signal_smtp", sa.String(320), nullable=False),
+    sa.Column("occurrences", sa.Integer, nullable=False, default=0),
+    sa.Column("example_subject", sa.Text, nullable=False, default=""),
+    sa.Column("suggested_sql", sa.Text, nullable=False, default=""),
+    sa.Column("status", sa.String(16), nullable=False, default="pending"),
+    # pending | applied | dismissed
+    sa.Column("first_seen_utc", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("last_seen_utc", sa.DateTime(timezone=True), nullable=False),
+    sa.UniqueConstraint("kind", "counterparty_smtp", "signal_smtp",
+                        name="uq_suggestion_pattern"),
 )
 
 config = sa.Table(
@@ -139,6 +180,8 @@ CONFIG_DEFAULTS = {
     "heartbeat_window_hours": "11",
     "digest_dry_run": "0",
     "dry_run_output_dir": "out",
+    "suggestion_min_occurrences": "3",
+    "suggestion_report_dir": "out",
 }
 
 
@@ -162,6 +205,7 @@ class ItemRow:
     first_seen_utc: datetime
     last_eval_utc: datetime
     urgent_alerted_utc: datetime | None
+    uncertain_signal_smtp: str | None
 
 
 def _utc(dt: datetime | None) -> datetime | None:
@@ -185,6 +229,7 @@ def _row_to_item(row) -> ItemRow:
         first_seen_utc=_utc(row.first_seen_utc),
         last_eval_utc=_utc(row.last_eval_utc),
         urgent_alerted_utc=_utc(row.urgent_alerted_utc),
+        uncertain_signal_smtp=row.uncertain_signal_smtp,
     )
 
 
@@ -317,9 +362,13 @@ class Store:
 
     def transition(self, item_id: int, to_state: str, *, reason: str,
                    evidence: str, actor_upn: str | None,
-                   now: datetime) -> ItemRow:
+                   now: datetime, signal_smtp: str | None = None) -> ItemRow:
         """Move an item to a new state; ItemEvent written in the same
-        transaction. Raises IllegalTransition on a disallowed move."""
+        transaction. Raises IllegalTransition on a disallowed move.
+
+        signal_smtp records the ambiguous sender when moving to
+        UNCERTAIN (feeds the suggest job); any other transition clears
+        it, since the ambiguity is now resolved one way or another."""
         with self.engine.begin() as cx:
             row = cx.execute(sa.select(open_item).where(
                 open_item.c.id == item_id).with_for_update()).first()
@@ -329,6 +378,8 @@ class Store:
             values: dict = {
                 "state": to_state, "state_reason": reason,
                 "last_eval_utc": now,
+                "uncertain_signal_smtp":
+                    signal_smtp if to_state == states.UNCERTAIN else None,
             }
             if to_state in (states.CLOSED_EVIDENCE, states.CLOSED_HUMAN,
                             states.CLOSED_EXCLUDED):
@@ -382,6 +433,63 @@ class Store:
                                      or domain.endswith("." + v.domain_pattern)):
                 return v
         return None
+
+    # -- known aliases (human-approved, deterministic) ----------------------
+    def add_known_alias(self, counterparty_smtp: str, alias_smtp: str,
+                        label: str = "", enabled: bool = True) -> None:
+        with self.engine.begin() as cx:
+            cx.execute(known_alias.insert().values(
+                counterparty_smtp=counterparty_smtp.casefold(),
+                alias_smtp=alias_smtp.casefold(), label=label,
+                enabled=enabled))
+
+    def alias_match(self, counterparty_smtp: str, sender_smtp: str) -> bool:
+        with self.engine.begin() as cx:
+            row = cx.execute(sa.select(known_alias.c.id).where(
+                known_alias.c.counterparty_smtp == counterparty_smtp.casefold(),
+                known_alias.c.alias_smtp == sender_smtp.casefold(),
+                known_alias.c.enabled == True)).first()  # noqa: E712
+            return row is not None
+
+    # -- suggestions (advisory only; never touches open_item) --------------
+    def record_suggestion_signal(self, *, kind: str, counterparty_smtp: str,
+                                 signal_smtp: str, subject: str,
+                                 min_occurrences: int,
+                                 now: datetime) -> None:
+        """Idempotent upsert: bump occurrences for a recurring pattern.
+        The row exists from the first occurrence but pending_suggestions()
+        only surfaces it once min_occurrences is reached. Never overwrites
+        a row a human already applied or dismissed."""
+        with self.engine.begin() as cx:
+            existing = cx.execute(sa.select(suggestion).where(
+                suggestion.c.kind == kind,
+                suggestion.c.counterparty_smtp == counterparty_smtp.casefold(),
+                suggestion.c.signal_smtp == signal_smtp.casefold(),
+            )).first()
+            if existing is not None:
+                if existing.status != "pending":
+                    return  # human already decided; don't resurface
+                cx.execute(suggestion.update().where(
+                    suggestion.c.id == existing.id
+                ).values(occurrences=existing.occurrences + 1,
+                        last_seen_utc=now))
+                return
+            sql = (f"INSERT INTO known_alias (counterparty_smtp, "
+                  f"alias_smtp, label, enabled) VALUES "
+                  f"('{counterparty_smtp.casefold()}', "
+                  f"'{signal_smtp.casefold()}', 'suggested', true);")
+            cx.execute(suggestion.insert().values(
+                kind=kind, counterparty_smtp=counterparty_smtp.casefold(),
+                signal_smtp=signal_smtp.casefold(), occurrences=1,
+                example_subject=subject, suggested_sql=sql,
+                status="pending", first_seen_utc=now, last_seen_utc=now))
+
+    def pending_suggestions(self, min_occurrences: int) -> list[sa.Row]:
+        with self.engine.begin() as cx:
+            return list(cx.execute(sa.select(suggestion).where(
+                suggestion.c.status == "pending",
+                suggestion.c.occurrences >= min_occurrences,
+            ).order_by(suggestion.c.occurrences.desc())))
 
     def add_exclusion(self, kind: str, pattern: str,
                       enabled: bool = True) -> None:

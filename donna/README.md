@@ -10,7 +10,9 @@ answered is decided only by deterministic rules — no LLM, no scoring, no
 ## Hard guarantees
 
 - **No LLM in the decision path.** The state machine in
-  `src/donna/engine/` is the entire product.
+  `src/donna/engine/` is the entire product. The suggestion engine
+  (below) counts recurring patterns but only a human, approving a
+  proposed rule, can ever change how an item is decided.
 - **No client secrets.** Managed Identity + federated credential on a
   single-tenant app registration (OPERATOR.md §3).
 - **Everything runs in the client's tenant.** The only external call is
@@ -40,6 +42,24 @@ answered is decided only by deterministic rules — no LLM, no scoring, no
 | Thread goes quiet | item stays open forever until a human acts |
 | Human clicks the signed mark-as-done link | `closed_human` (the only path to it) |
 
+## The suggestion engine (not machine learning, on purpose)
+
+Recurring `uncertain` items — the same counterparty's mail keeps getting
+answered from a different address — are worth a human's attention once,
+not a re-decision every poll. `src/donna/jobs/suggest.py` counts these
+recurrences in the ledger and, once a pattern crosses
+`suggestion_min_occurrences` (default 3, see CONFIG.md), writes a
+reviewable report with copy-paste SQL to approve it. Approving inserts
+one row into `known_alias` — an ordinary table `poll.py` checks like
+`vip_contact` or `exclusion_rule`. That is the entire mechanism: no
+trained model, no probability score, no AI API call. Hard constraint 1
+(no LLM anywhere in the decision path) means the "learning" can only
+ever produce a candidate for a human to approve — it never closes an
+item, never excludes a sender, and never itself decides anything.
+Older items already flagged uncertain are never retroactively
+reclassified when an alias is approved; only new occurrences of the
+approved pattern are affected. Runs weekly (Mondays 05:00 UTC).
+
 ## The briefing
 
 Each person's twice-daily email carries: overdue inbound (oldest first),
@@ -53,7 +73,7 @@ senders, or task titles.
 ## Layout
 
 ```
-src/donna/            engine, ledger, jobs (poll / digest / urgent / heartbeat)
+src/donna/            engine, ledger, jobs (poll / digest / urgent / heartbeat / suggest)
 function_app.py       Azure Functions entry points (timers UTC + POST /api/close/{token})
 tests/                the fixture suite — 22 synthetic Graph messages; the suite is the spec
 infra/                Bicep (Function App, Postgres Burstable, Key Vault, alert rule) + SQL trigger

@@ -16,6 +16,8 @@ back to the defaults below (`donna/src/donna/store.py:CONFIG_DEFAULTS`).
 | `heartbeat_window_hours` | `11` | Heartbeat alerts if no successful digest within this window |
 | `digest_dry_run` | `0` | `1` renders digests to local files instead of sending |
 | `dry_run_output_dir` | `out` | Where dry-run digests are written |
+| `suggestion_min_occurrences` | `3` | How many times a pattern must recur in the `uncertain` bucket before the weekly report surfaces it (RUNBOOK.md) |
+| `suggestion_report_dir` | `out` | Where the weekly recurring-pattern report is written |
 
 Update with plain SQL, e.g.:
 

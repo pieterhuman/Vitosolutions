@@ -39,6 +39,8 @@ def run_poll(graph, store: Store, now: datetime) -> dict:
     exclusions = store.exclusions()
     default_inbound = int(store.config_get("threshold_inbound_hours"))
     default_sent = int(store.config_get("threshold_sent_awaiting_hours"))
+    suggestion_threshold = int(
+        store.config_get("suggestion_min_occurrences"))
 
     inbox: list[tuple] = []
     for p in principals:
@@ -56,7 +58,8 @@ def run_poll(graph, store: Store, now: datetime) -> dict:
                                    internal_domains, default_sent, now)
         else:
             c1, c2 = _process_inbound(store, p, msg, monitored, exclusions,
-                                      default_inbound, now)
+                                      default_inbound, now,
+                                      suggestion_threshold)
         created += c1
         closed += c2
 
@@ -140,8 +143,8 @@ def _process_sent(store: Store, p, msg: Message, monitored: dict,
 
 
 def _process_inbound(store: Store, p, msg: Message, monitored: dict,
-                     exclusions, default_inbound: int,
-                     now: datetime) -> tuple[int, int]:
+                     exclusions, default_inbound: int, now: datetime,
+                     suggestion_threshold: int) -> tuple[int, int]:
     created = closed = 0
     # Auto-replies close nothing, open nothing, and are never grounds
     # for uncertainty. Checked before the bulk filter because OOO
@@ -156,9 +159,12 @@ def _process_inbound(store: Store, p, msg: Message, monitored: dict,
                               states.KIND_SENT_AWAITING):
         if msg.received <= item.anchor_utc:
             continue
-        if msg.from_smtp == item.counterparty_smtp:
-            store.transition(item.id, states.CLOSED_EVIDENCE,
-                             reason="counterparty_replied",
+        if msg.from_smtp == item.counterparty_smtp or store.alias_match(
+                item.counterparty_smtp, msg.from_smtp):
+            reason = ("counterparty_replied"
+                     if msg.from_smtp == item.counterparty_smtp
+                     else "replied_via_known_alias")
+            store.transition(item.id, states.CLOSED_EVIDENCE, reason=reason,
                              evidence=_evidence(msg), actor_upn=None,
                              now=now)
             closed += 1
@@ -167,22 +173,41 @@ def _process_inbound(store: Store, p, msg: Message, monitored: dict,
                 store.transition(item.id, states.UNCERTAIN,
                                  reason="reply_from_different_address",
                                  evidence=_evidence(msg), actor_upn=None,
-                                 now=now)
+                                 now=now, signal_smtp=msg.from_smtp)
+                store.record_suggestion_signal(
+                    kind="recurring_alias",
+                    counterparty_smtp=item.counterparty_smtp,
+                    signal_smtp=msg.from_smtp, subject=item.subject,
+                    min_occurrences=suggestion_threshold, now=now)
 
     # An in-thread reply from an address that is neither the original
     # counterparty nor a monitored team member makes the inbound item
-    # ambiguous: uncertain, never closed.
+    # ambiguous: uncertain, never closed — UNLESS a human has already
+    # approved that address as a known alias of the counterparty, in
+    # which case it's an ordinary deterministic closure.
     for item in _active_items(store, msg.conversation_id,
                               states.KIND_INBOUND):
         if msg.received <= item.anchor_utc:
             continue
-        if (msg.from_smtp != item.counterparty_smtp
-                and msg.from_smtp not in monitored
-                and item.state != states.UNCERTAIN):
+        if msg.from_smtp == item.counterparty_smtp:
+            continue
+        if msg.from_smtp in monitored:
+            continue
+        if store.alias_match(item.counterparty_smtp, msg.from_smtp):
+            store.transition(item.id, states.CLOSED_EVIDENCE,
+                             reason="replied_via_known_alias",
+                             evidence=_evidence(msg), actor_upn=None,
+                             now=now)
+            closed += 1
+        elif item.state != states.UNCERTAIN:
             store.transition(item.id, states.UNCERTAIN,
                              reason="reply_from_unknown_sender",
                              evidence=_evidence(msg), actor_upn=None,
-                             now=now)
+                             now=now, signal_smtp=msg.from_smtp)
+            store.record_suggestion_signal(
+                kind="recurring_alias", counterparty_smtp=item.counterparty_smtp,
+                signal_smtp=msg.from_smtp, subject=item.subject,
+                min_occurrences=suggestion_threshold, now=now)
 
     # Item creation: principal must be a To recipient (CC-only never
     # becomes an item), and one active item per conversation is enough.

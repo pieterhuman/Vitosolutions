@@ -5,6 +5,7 @@ Cron schedules are UTC (tenant runs SAST = UTC+2, no DST):
   digest     04:30 and 14:30 UTC weekdays (06:30 / 16:30 SAST)
   urgent     every 10 minutes
   heartbeat  04:45 and 14:45 UTC weekdays
+  suggest    05:00 UTC Mondays (recurring-pattern review report)
   POST /api/close/{token}   signed mark-as-done link
 """
 from __future__ import annotations
@@ -20,6 +21,7 @@ from donna.engine.poll import run_poll
 from donna.http_close import handle_close
 from donna.jobs.digest import run_digest
 from donna.jobs.heartbeat import run_heartbeat
+from donna.jobs.suggest import run_suggest
 from donna.jobs.urgent import run_urgent
 from donna.telemetry import install
 
@@ -63,6 +65,15 @@ def urgent(timer: func.TimerRequest) -> None:
                    run_on_startup=False)
 def heartbeat(timer: func.TimerRequest) -> None:
     run_heartbeat(config.store(), now=_now())
+
+
+@app.timer_trigger(schedule="0 0 5 * * 1", arg_name="timer",
+                   run_on_startup=False)
+def suggest(timer: func.TimerRequest) -> None:
+    # Always writes its report to suggestion_report_dir (CONFIG.md) —
+    # there's no "live send" mode yet, so this doesn't follow digest's
+    # dry-run flag.
+    run_suggest(config.store(), now=_now())
 
 
 @app.route(route="close/{token}", methods=["POST"],
