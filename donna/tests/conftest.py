@@ -56,6 +56,7 @@ class FakeGraph:
         self.sent_mail: list[dict] = []
         self.calendar: dict[str, list[dict]] = {}
         self.tasks: dict[str, list[dict]] = {}
+        self.planner: dict[str, list[dict]] = {}
         self.delta_calls: list[tuple[str, str, str | None]] = []
 
     # -- test wiring -----------------------------------------------------
@@ -86,6 +87,9 @@ class FakeGraph:
 
     def tasks_due(self, upn: str, today: datetime) -> list[dict]:
         return self.tasks.get(upn.casefold(), [])
+
+    def planner_overdue(self, upn: str, now: datetime) -> list[dict]:
+        return self.planner.get(upn.casefold(), [])
 
     def send_mail(self, *, from_upn: str, to_upn: str, subject: str,
                   html_body: str) -> None:

@@ -133,6 +133,31 @@ class GraphClient:
                        for t in page.get("value", []))
         return due
 
+    def planner_overdue(self, upn: str, now: datetime) -> list[dict]:
+        """Planner tasks assigned to the user, incomplete and past due.
+        Covered by the Tasks.Read.All application permission."""
+        cutoff = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        page = self._get(f"{GRAPH}/users/{upn}/planner/tasks")
+        plan_titles: dict[str, str] = {}
+        overdue: list[dict] = []
+        for task in page.get("value", []):
+            due = task.get("dueDateTime")
+            if not due or task.get("percentComplete", 0) >= 100:
+                continue
+            if due >= cutoff:
+                continue
+            plan_id = task.get("planId", "")
+            if plan_id and plan_id not in plan_titles:
+                try:
+                    plan = self._get(f"{GRAPH}/planner/plans/{plan_id}")
+                    plan_titles[plan_id] = plan.get("title", "")
+                except Exception:
+                    plan_titles[plan_id] = ""
+            overdue.append({"title": task.get("title", ""),
+                            "plan": plan_titles.get(plan_id, ""),
+                            "due": due[:10]})
+        return sorted(overdue, key=lambda t: t["due"])
+
     def send_mail(self, *, from_upn: str, to_upn: str, subject: str,
                   html_body: str) -> None:
         resp = self._session.post(

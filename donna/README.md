@@ -40,6 +40,16 @@ answered is decided only by deterministic rules — no LLM, no scoring, no
 | Thread goes quiet | item stays open forever until a human acts |
 | Human clicks the signed mark-as-done link | `closed_human` (the only path to it) |
 
+## The briefing
+
+Each person's twice-daily email carries: overdue inbound (oldest first),
+sent-awaiting-reply, uncertain items, today's calendar, To Do tasks due
+today and overdue, and **overdue Planner tasks** (title, plan, due date).
+Planner is additive — if the Planner read fails, the briefing still
+sends without that section. The CEO's rollup shows per-person counts
+only (inbound / awaiting / uncertain / tasks overdue), never subjects,
+senders, or task titles.
+
 ## Layout
 
 ```

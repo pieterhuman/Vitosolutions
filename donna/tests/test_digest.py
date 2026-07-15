@@ -81,6 +81,52 @@ def test_non_ceo_digest_has_no_rollup(graph, store, tmp_path):
     assert "Team rollup" not in html
 
 
+def test_planner_overdue_in_owner_digest(graph, store, tmp_path):
+    _seed(graph, store)
+    graph.planner[ALICE] = [
+        {"title": "File FICA documentation", "plan": "Compliance",
+         "due": "2026-06-28"},
+        {"title": "Renew office lease", "plan": "Operations",
+         "due": "2026-06-30"},
+    ]
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "Overdue in Planner" in html
+    assert "File FICA documentation" in html and "Compliance" in html
+    assert "due 2026-06-28" in html
+
+    frank_html = next(tmp_path.glob("digest_frank*.html")).read_text()
+    assert "Nothing overdue in Planner" in frank_html
+
+
+def test_planner_counts_only_in_ceo_rollup(graph, store, tmp_path):
+    _seed(graph, store)
+    graph.planner[ALICE] = [
+        {"title": "File FICA documentation", "plan": "Compliance",
+         "due": "2026-06-28"},
+    ]
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    ceo_html = next(tmp_path.glob("digest_ceo*.html")).read_text()
+    assert "tasks overdue" in ceo_html, "rollup carries the overdue count"
+    assert "File FICA documentation" not in ceo_html, \
+        "CEO rollup must never leak task titles"
+    assert "Compliance" not in ceo_html
+
+
+def test_planner_failure_never_blocks_briefing(graph, store, tmp_path):
+    _seed(graph, store)
+
+    def broken(upn, now):
+        raise RuntimeError("planner unavailable")
+
+    graph.planner_overdue = broken
+    result = run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+                        token_key=KEY, dry_run_dir=str(tmp_path))
+    assert result["rendered"] == 7, "Planner is additive, never blocking"
+
+
 def test_live_send_uses_service_mailbox(graph, store):
     _seed(graph, store)
     run_digest(graph, store, now=T("2026-07-03T04:30:00Z"), token_key=KEY,

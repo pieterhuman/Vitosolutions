@@ -24,6 +24,14 @@ in order. Placeholders: `<TENANT_ID>`, `<APP_ID>`, `<MI_PRINCIPAL_ID>`
    Do **not** add `Mail.ReadWrite`, `Chat.Read.All`, or
    `ChannelMessage.Read.All`. If a future request asks for them, that
    request is out of scope for this product by design.
+
+   > `Tasks.Read.All` covers both To Do and Planner application-
+   > permission reads — the overdue-Planner section in the briefings
+   > needs no extra permission. Governance note: the Exchange
+   > Application Access Policy in §5 fences **mailbox** access only; it
+   > does not scope Planner. Donna's code reads Planner tasks solely
+   > for the active principals in its ledger — include that in the
+   > quarterly re-verification (RUNBOOK.md).
 3. Remove the default `User.Read` delegated permission (unused).
 
 ## 2. Admin consent

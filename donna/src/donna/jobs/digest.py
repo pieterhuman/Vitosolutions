@@ -24,12 +24,18 @@ def run_digest(graph, store: Store, now: datetime, token_key: bytes,
     base_url = store.config_get("close_base_url").rstrip("/")
     principals = store.active_principals()
 
-    rollup = [(p.display_name, _counts(store, p.id)) for p in principals]
+    planner = {p.upn: _planner_overdue_safe(graph, p.upn, now)
+               for p in principals}
+    rollup = [
+        (p.display_name,
+         _counts(store, p.id) | {"tasks_overdue": len(planner[p.upn])})
+        for p in principals
+    ]
 
     rendered = 0
     for p in principals:
         body = _render(graph, store, p, now, token_key, base_url,
-                       rollup if p.is_ceo else None)
+                       rollup if p.is_ceo else None, planner[p.upn])
         subject = f"Donna briefing — {now:%a %d %b %Y}"
         if dry_run_dir is not None:
             out = pathlib.Path(dry_run_dir)
@@ -48,6 +54,16 @@ def run_digest(graph, store: Store, now: datetime, token_key: bytes,
     log.info("digest complete rendered=%d dry_run=%s", rendered,
              bool(dry_run_dir))
     return {"rendered": rendered, "dry_run": dry_run_dir is not None}
+
+
+def _planner_overdue_safe(graph, upn: str, now: datetime) -> list[dict]:
+    """Planner is additive: a Planner outage or missing license must
+    never block the briefing itself."""
+    try:
+        return graph.planner_overdue(upn, now)
+    except Exception:
+        log.warning("planner read failed for a principal; section omitted")
+        return []
 
 
 def _counts(store: Store, principal_id: int) -> dict[str, int]:
@@ -96,7 +112,7 @@ def _section(title: str, rows: list[str], empty: str) -> str:
 
 
 def _render(graph, store: Store, p, now: datetime, token_key: bytes,
-            base_url: str, rollup) -> str:
+            base_url: str, rollup, planner_overdue: list[dict]) -> str:
     overdue = [i for i in store.items(principal_id=p.id,
                                       kind=states.KIND_INBOUND,
                                       item_states=(states.OPEN,))
@@ -140,6 +156,12 @@ def _render(graph, store: Store, p, now: datetime, token_key: bytes,
                  [f"<tr><td style='padding:4px 0'>{_e(t.get('title', ''))}"
                   f"</td></tr>" for t in tasks],
                  "No tasks due."),
+        _section("Overdue in Planner",
+                 [f"<tr><td style='padding:4px 12px 4px 0'>{_e(t.get('title', ''))}</td>"
+                  f"<td style='padding:4px 12px 4px 0;color:#666'>{_e(t.get('plan', ''))}</td>"
+                  f"<td style='padding:4px 0;white-space:nowrap'>due {_e(t.get('due', ''))}</td></tr>"
+                  for t in planner_overdue],
+                 "Nothing overdue in Planner."),
     ]
 
     if rollup is not None:
@@ -147,7 +169,8 @@ def _render(graph, store: Store, p, now: datetime, token_key: bytes,
             f"<tr><td style='padding:4px 12px 4px 0'>{_e(name)}</td>"
             f"<td style='padding:4px 12px 4px 0'>{c['inbound']} inbound</td>"
             f"<td style='padding:4px 12px 4px 0'>{c['awaiting']} awaiting</td>"
-            f"<td style='padding:4px 0'>{c['uncertain']} uncertain</td></tr>"
+            f"<td style='padding:4px 12px 4px 0'>{c['uncertain']} uncertain</td>"
+            f"<td style='padding:4px 0'>{c['tasks_overdue']} tasks overdue</td></tr>"
             for name, c in rollup
         ]
         parts.append(_section("Team rollup (counts only)", rows, ""))
