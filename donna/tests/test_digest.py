@@ -127,6 +127,45 @@ def test_planner_failure_never_blocks_briefing(graph, store, tmp_path):
     assert result["rendered"] == 7, "Planner is additive, never blocking"
 
 
+def test_severity_scales_with_threshold_not_raw_hours(graph, store, tmp_path):
+    """A VIP item's 3h threshold means the SAME clock-hours overdue reads
+    far more severe than a regular item's 24h threshold — ratio-based,
+    not absolute-hours-based."""
+    graph.queue(FRANK, "inbox", [fixture("m10_vip_inbound")])  # 3h threshold
+    graph.queue(ALICE, "inbox", [fixture("m01_inbound")])       # 24h threshold
+    run_poll(graph, store, now=T("2026-07-01T08:10:00Z"))
+    # 6 hours later: VIP is 3h past its 3h threshold (ratio 1.0 -> orange),
+    # Alice's item isn't overdue at all yet (6h < 24h threshold).
+    run_digest(graph, store, now=T("2026-07-01T14:10:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+
+    frank_html = next(tmp_path.glob("digest_frank*.html")).read_text()
+    assert "#B5690E" in frank_html, "VIP item should already read orange"
+
+    alice_html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "Trust deed amendments" not in alice_html, \
+        "not yet past its 24h threshold, should not appear as overdue"
+
+
+def test_not_yet_due_awaiting_item_is_neutral_not_falsely_green(graph, store, tmp_path):
+    _seed(graph, store)  # includes a sent item 44h into its 72h window
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "not yet due" in html
+    assert "just overdue" not in html, \
+        "an item still inside its window must not be mislabeled overdue"
+
+
+def test_uncertain_items_use_slate_not_traffic_light_colors(graph, store, tmp_path):
+    _seed(graph, store)
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "needs judgement" in html
+    assert "#3E5470" in html
+
+
 def test_live_send_uses_service_mailbox(graph, store):
     _seed(graph, store)
     run_digest(graph, store, now=T("2026-07-03T04:30:00Z"), token_key=KEY,
