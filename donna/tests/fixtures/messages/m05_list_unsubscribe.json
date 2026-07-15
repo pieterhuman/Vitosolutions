@@ -31,5 +31,6 @@
       "name": "List-Unsubscribe",
       "value": "<mailto:leave@updates.example>"
     }
-  ]
+  ],
+  "webLink": "https://outlook.office.com/mail/deeplink/read/AAMk-m05a"
 }

@@ -36,7 +36,7 @@ EXCHANGE_AUDIENCE = "api://AzureADTokenExchange/.default"
 SELECT_FIELDS = ",".join([
     "id", "internetMessageId", "conversationId", "subject", "from",
     "sender", "toRecipients", "ccRecipients", "receivedDateTime",
-    "sentDateTime", "internetMessageHeaders",
+    "sentDateTime", "internetMessageHeaders", "webLink",
 ])
 
 FOLDER_IDS = {"inbox": "inbox", "sentitems": "sentitems"}

@@ -128,6 +128,19 @@ def _dot(color: str) -> str:
             f"vertical-align:middle'></span>")
 
 
+def _subject_cell(item) -> str:
+    """The item's own webLink (Graph's documented "open this message in
+    Outlook on the web" URL) opens the exact item — safe to link because
+    it's the item's own owner opening their own mail, not cross-person
+    access. Falls back to plain text when Graph didn't return one (e.g.
+    synthetic/demo data)."""
+    if item.web_link:
+        return (f"<a href='{_e(item.web_link)}' style='color:{INK};"
+                f"text-decoration:none;border-bottom:1px solid {RULE}'>"
+                f"{_e(item.subject)}</a>")
+    return _e(item.subject)
+
+
 def _item_row(item, now: datetime, principal_id: int, token_key: bytes,
               base_url: str, *, uncertain: bool = False) -> str:
     expiry = int(now.timestamp()) + tokens.TOKEN_TTL_SECONDS
@@ -154,7 +167,7 @@ def _item_row(item, now: datetime, principal_id: int, token_key: bytes,
     return (
         f"<tr style='background:{soft}'>"
         f"<td style='padding:6px 12px 6px 10px;border-radius:4px 0 0 4px'>{badge}</td>"
-        f"<td style='padding:6px 12px 6px 0;color:{INK}'>{_e(item.subject)}</td>"
+        f"<td style='padding:6px 12px 6px 0;color:{INK}'>{_subject_cell(item)}</td>"
         f"<td style='padding:6px 12px 6px 0;color:{MUTED}'>{_e(item.counterparty_name or item.counterparty_smtp)}</td>"
         f"{age_cell}"
         "<td style='padding:6px 10px 6px 0;border-radius:0 4px 4px 0'>"
@@ -168,16 +181,23 @@ def _item_row(item, now: datetime, principal_id: int, token_key: bytes,
 
 
 def _section(title: str, rows: list[str], empty: str,
-            accent: str | None = None) -> str:
+            accent: str | None = None, header_link: tuple[str, str] | None = None) -> str:
     rule_color = accent or RULE
     body = (f"<table cellspacing='0' cellpadding='0' style='width:100%;"
             f"border-collapse:separate;border-spacing:0 3px'>{''.join(rows)}</table>"
             if rows else f"<p style='color:{MUTED};margin:4px 0 0'>{_e(empty)}</p>")
+    link_html = ""
+    if header_link:
+        url, label = header_link
+        link_html = (f"<a href='{_e(url)}' style='margin-left:10px;"
+                    f"font-size:0.78em;font-weight:600;color:{ACCENT};"
+                    f"text-decoration:none'>{_e(label)} &rarr;</a>")
     return (
         f"<div style='margin:22px 0 8px;padding-left:10px;"
         f"border-left:3px solid {rule_color}'>"
-        f"<h3 style='margin:0;font-family:Segoe UI,Arial,sans-serif;"
-        f"font-size:1.02em;color:{INK}'>{_e(title)}</h3></div>{body}"
+        f"<h3 style='margin:0;display:inline;font-family:Segoe UI,Arial,"
+        f"sans-serif;font-size:1.02em;color:{INK}'>{_e(title)}</h3>"
+        f"{link_html}</div>{body}"
     )
 
 
@@ -201,6 +221,7 @@ def _render(graph, store: Store, p, now: datetime, token_key: bytes,
 
     red, orange, slate = (SEVERITY_COLORS["red"][0], SEVERITY_COLORS["orange"][0],
                          UNCERTAIN_COLOR[0])
+    planner_hub_url = store.config_get("planner_hub_url")
 
     parts = [
         f"<div style='font-family:Segoe UI,Arial,sans-serif;max-width:720px;color:{INK}'>",
@@ -238,7 +259,8 @@ def _render(graph, store: Store, p, now: datetime, token_key: bytes,
                   f"<td style='padding:4px 12px 4px 0;color:{MUTED}'>{_e(t.get('plan', ''))}</td>"
                   f"<td style='padding:4px 0;white-space:nowrap;color:{red}'>due {_e(t.get('due', ''))}</td></tr>"
                   for t in planner_overdue],
-                 "Nothing overdue in Planner.", accent=red),
+                 "Nothing overdue in Planner.", accent=red,
+                 header_link=(planner_hub_url, "Open Planner")),
     ]
 
     if rollup is not None:
@@ -252,7 +274,8 @@ def _render(graph, store: Store, p, now: datetime, token_key: bytes,
             f"<td style='padding:5px 12px 5px 0'>{stat(c['inbound'], 'inbound', red)}</td>"
             f"<td style='padding:5px 12px 5px 0'>{stat(c['awaiting'], 'awaiting', orange)}</td>"
             f"<td style='padding:5px 12px 5px 0'>{stat(c['uncertain'], 'uncertain', slate)}</td>"
-            f"<td style='padding:5px 0'>{stat(c['tasks_overdue'], 'tasks overdue', red)}</td></tr>"
+            f"<td style='padding:5px 0'><a href='{_e(planner_hub_url)}' "
+            f"style='text-decoration:none'>{stat(c['tasks_overdue'], 'tasks overdue', red)}</a></td></tr>"
             for name, c in rollup
         ]
         parts.append(_section("Team rollup (counts only)", rows, ""))

@@ -37,6 +37,7 @@ class Message:
     cc: tuple[str, ...]
     sent: datetime
     received: datetime
+    web_link: str = ""
     headers: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     @classmethod
@@ -56,6 +57,7 @@ class Message:
             cc=tuple(_smtp(r) for r in payload.get("ccRecipients") or []),
             sent=parse_graph_datetime(payload["sentDateTime"]),
             received=parse_graph_datetime(payload["receivedDateTime"]),
+            web_link=payload.get("webLink", ""),
             headers={k: tuple(v) for k, v in headers.items()},
         )
 

@@ -18,6 +18,7 @@ back to the defaults below (`donna/src/donna/store.py:CONFIG_DEFAULTS`).
 | `dry_run_output_dir` | `out` | Where dry-run digests are written |
 | `suggestion_min_occurrences` | `3` | How many times a pattern must recur in the `uncertain` bucket before the weekly report surfaces it (RUNBOOK.md) |
 | `suggestion_report_dir` | `out` | Where the weekly recurring-pattern report is written |
+| `planner_hub_url` | `https://tasks.office.com/` | Where "Open Planner" links go, in both individual briefings and the CEO rollup's tasks-overdue count. Microsoft Graph has no documented per-task or per-plan deep link for Planner (unlike `message.webLink` for mail — see README), so this is the Planner web app's own hostname, not a specific task. Set to your tenant's Planner URL if you have one, e.g. `https://tasks.office.com/<tenant-domain>` |
 
 Update with plain SQL, e.g.:
 

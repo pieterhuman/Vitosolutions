@@ -58,8 +58,9 @@ def _addr(pair):
 
 def _msg(*, frm, to, conv: str, subject: str, sent: datetime,
          cc=(), headers=None, received: datetime | None = None) -> dict:
+    msg_id = _id()
     return {
-        "id": f"AAMk-{_id()}",
+        "id": f"AAMk-{msg_id}",
         "internetMessageId": f"<{_id()}@{frm[0].split('@')[1]}>",
         "conversationId": f"AAQk-{conv}",
         "subject": subject,
@@ -71,6 +72,9 @@ def _msg(*, frm, to, conv: str, subject: str, sent: datetime,
         "internetMessageHeaders": [
             {"name": n, "value": v} for n, v in (headers or [])
         ],
+        # Synthetic but shaped like a real Graph webLink, so the demo
+        # exercises the same "open in Outlook" link the real product renders.
+        "webLink": f"https://outlook.office.com/mail/deeplink/read/AAMk-{msg_id}",
     }
 
 

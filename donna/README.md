@@ -62,6 +62,29 @@ Older items already flagged uncertain are never retroactively
 reclassified when an alias is approved; only new occurrences of the
 approved pattern are affected. Runs weekly (Mondays 05:00 UTC).
 
+## Links, and why the CEO rollup doesn't have them
+
+Every item in a person's own briefing links its subject to the real
+message — Graph's documented `message.webLink` property, captured at
+item-creation time and stored on the ledger row. That's safe because
+it's someone opening their own mail, the same access they already
+have. The "Overdue in Planner" section and the CEO rollup's
+tasks-overdue count link to the Planner web app (`planner_hub_url`,
+CONFIG.md) — Microsoft Graph has no documented per-task or per-plan
+deep link, so this opens the Planner hub, not a specific task.
+
+The CEO rollup's **inbound / awaiting / uncertain** mail counts are
+deliberately never links. A clickable link into a teammate's inbox is
+the same disclosure as printing their subject line directly — one
+click removed, not actually protected — and it would silently defeat
+the counts-only boundary the brief itself specifies: *"a summarized
+roll-up view of the team's status (not full access to their individual
+emails) unless we specifically decide otherwise for particular
+roles."* If that decision ever gets made deliberately, it also
+requires an Exchange mailbox delegation grant for the CEO on each
+monitored mailbox — a real IT/consent step, not just a Donna config
+change.
+
 ## The briefing
 
 Each person's twice-daily email carries: overdue inbound (oldest first),

@@ -68,6 +68,9 @@ def msg(
         "internetMessageHeaders": [
             {"name": n, "value": v} for n, v in (headers or [])
         ],
+        # Synthetic but shaped like a real Graph webLink, so tests can
+        # exercise the digest's "open in Outlook" link rendering.
+        "webLink": f"https://outlook.office.com/mail/deeplink/read/AAMk-{key}",
     }
 
 

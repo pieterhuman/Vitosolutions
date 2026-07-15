@@ -136,7 +136,7 @@ def _process_sent(store: Store, p, msg: Message, monitored: dict,
             internet_message_id=msg.internet_message_id,
             subject=msg.subject, counterparty_smtp=counterparty[0],
             counterparty_name=counterparty[1], anchor_utc=msg.sent,
-            threshold_hours=default_sent, now=now)
+            threshold_hours=default_sent, now=now, web_link=msg.web_link)
         if item:
             created += 1
     return created, closed
@@ -224,7 +224,7 @@ def _process_inbound(store: Store, p, msg: Message, monitored: dict,
         internet_message_id=msg.internet_message_id,
         subject=msg.subject, counterparty_smtp=msg.from_smtp,
         counterparty_name=msg.from_name, anchor_utc=msg.received,
-        threshold_hours=threshold, now=now)
+        threshold_hours=threshold, now=now, web_link=msg.web_link)
     if item:
         created += 1
     return created, closed

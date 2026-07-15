@@ -67,6 +67,11 @@ open_item = sa.Table(
     # subject/counterparty_smtp above) so the suggest job can group
     # recurring patterns; cleared once the item leaves UNCERTAIN.
     sa.Column("uncertain_signal_smtp", sa.String(320), nullable=True),
+    # Graph's message.webLink for the triggering message — opens it
+    # directly in Outlook on the web. Nullable: synthetic/demo data and
+    # any message Graph didn't return a webLink for won't have one, and
+    # the digest falls back to plain text when absent.
+    sa.Column("web_link", sa.Text, nullable=True),
     sa.UniqueConstraint("principal_id", "kind", "internet_message_id",
                         name="uq_item_principal_kind_msgid"),
 )
@@ -182,6 +187,11 @@ CONFIG_DEFAULTS = {
     "dry_run_output_dir": "out",
     "suggestion_min_occurrences": "3",
     "suggestion_report_dir": "out",
+    # Graph has no documented per-task or per-plan deep link (confirmed
+    # against Microsoft's own plannerTask docs — no webLink-equivalent
+    # property exists there, unlike message.webLink). This links to the
+    # Planner web app's own default hostname, not a specific task.
+    "planner_hub_url": "https://tasks.office.com/",
 }
 
 
@@ -206,6 +216,7 @@ class ItemRow:
     last_eval_utc: datetime
     urgent_alerted_utc: datetime | None
     uncertain_signal_smtp: str | None
+    web_link: str | None
 
 
 def _utc(dt: datetime | None) -> datetime | None:
@@ -230,6 +241,7 @@ def _row_to_item(row) -> ItemRow:
         last_eval_utc=_utc(row.last_eval_utc),
         urgent_alerted_utc=_utc(row.urgent_alerted_utc),
         uncertain_signal_smtp=row.uncertain_signal_smtp,
+        web_link=row.web_link,
     )
 
 
@@ -307,6 +319,7 @@ class Store:
                            subject: str, counterparty_smtp: str,
                            counterparty_name: str, anchor_utc: datetime,
                            threshold_hours: int, now: datetime,
+                           web_link: str = "",
                            ) -> ItemRow | None:
         """Insert an item in state=open plus its creation ItemEvent, in one
         transaction. Returns None when the (principal, kind, msgid) already
@@ -327,7 +340,7 @@ class Store:
                 counterparty_name=counterparty_name, anchor_utc=anchor_utc,
                 threshold_hours=threshold_hours, state=states.OPEN,
                 state_reason="created", first_seen_utc=now,
-                last_eval_utc=now,
+                last_eval_utc=now, web_link=web_link or None,
             )).inserted_primary_key[0]
             cx.execute(item_event.insert().values(
                 item_id=item_id, from_state="none", to_state=states.OPEN,

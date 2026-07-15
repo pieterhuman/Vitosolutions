@@ -166,6 +166,82 @@ def test_uncertain_items_use_slate_not_traffic_light_colors(graph, store, tmp_pa
     assert "#3E5470" in html
 
 
+def test_subject_links_to_the_item_own_weblink(graph, store, tmp_path):
+    _seed(graph, store)
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "https://outlook.office.com/mail/deeplink/read/" in html
+    assert "<a href='https://outlook.office.com/mail/deeplink/read/" \
+           in html.split("Trust deed amendments")[0][-200:]
+
+
+def test_subject_falls_back_to_plain_text_without_a_weblink(store):
+    from donna.jobs.digest import _subject_cell
+
+    class FakeItem:
+        subject = "No web link available"
+        web_link = None
+
+    cell = _subject_cell(FakeItem())
+    assert cell == "No web link available"
+    assert "<a" not in cell
+
+
+def test_ceo_rollup_mail_counts_have_no_links(graph, store, tmp_path):
+    """The counts-only boundary means these stay plain text: a link would
+    be the same disclosure as printing the subject, one click removed.
+    Only the tasks-overdue cell (last) links, to the generic Planner hub."""
+    _seed(graph, store)
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    ceo_html = next(tmp_path.glob("digest_ceo*.html")).read_text()
+    rollup_table = ceo_html.split("Team rollup")[1]
+    assert "outlook.office.com" not in rollup_table
+
+    rows = rollup_table.split("<tr>")[1:]
+    assert rows, "expected at least one rollup row"
+    for row in rows:
+        cells = row.split("</td>")
+        name, inbound, awaiting, uncertain, tasks_overdue = cells[:5]
+        for cell in (inbound, awaiting, uncertain):
+            assert "<a href=" not in cell, \
+                f"mail count must not be a link: {cell!r}"
+        assert "<a href=" in tasks_overdue, \
+            "tasks-overdue cell should link to the Planner hub"
+
+
+def test_planner_hub_link_present_in_own_briefing_and_rollup(graph, store, tmp_path):
+    _seed(graph, store)
+    graph.planner[ALICE] = [
+        {"title": "File FICA documentation", "plan": "Compliance",
+         "due": "2026-06-28"},
+    ]
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    alice_html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "https://tasks.office.com/" in alice_html
+    assert "Open Planner" in alice_html
+
+    ceo_html = next(tmp_path.glob("digest_ceo*.html")).read_text()
+    rollup_section = ceo_html.split("Team rollup")[1]
+    assert "https://tasks.office.com/" in rollup_section, \
+        "tasks-overdue count should link to the Planner hub"
+
+
+def test_planner_hub_url_is_configurable(graph, store, tmp_path):
+    store.config_set("planner_hub_url", "https://tasks.office.com/acme-family-office")
+    graph.planner[ALICE] = [
+        {"title": "File FICA documentation", "plan": "Compliance",
+         "due": "2026-06-28"},
+    ]
+    _seed(graph, store)
+    run_digest(graph, store, now=T("2026-07-03T04:30:00Z"),
+               token_key=KEY, dry_run_dir=str(tmp_path))
+    html = next(tmp_path.glob("digest_alice*.html")).read_text()
+    assert "https://tasks.office.com/acme-family-office" in html
+
+
 def test_live_send_uses_service_mailbox(graph, store):
     _seed(graph, store)
     run_digest(graph, store, now=T("2026-07-03T04:30:00Z"), token_key=KEY,
