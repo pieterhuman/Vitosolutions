@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m05e",
+  "internetMessageId": "<m05e@spamlist.example>",
+  "conversationId": "AAQk-c05e",
+  "subject": "Special offer inside",
+  "sentDateTime": "2026-07-01T08:44:00Z",
+  "receivedDateTime": "2026-07-01T08:44:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "promo@spamlist.example",
+      "name": "Promo Desk"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "promo@spamlist.example",
+      "name": "Promo Desk"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "dan@familyoffice.example",
+        "name": "Dan Botha"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

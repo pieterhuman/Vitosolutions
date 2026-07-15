@@ -1,0 +1,37 @@
+{
+  "id": "AAMk-m06a",
+  "internetMessageId": "<m06a@sterlinglaw.example>",
+  "conversationId": "AAQk-c06",
+  "subject": "Estate planning notes",
+  "sentDateTime": "2026-07-01T08:45:00Z",
+  "receivedDateTime": "2026-07-01T08:45:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "lawyer@sterlinglaw.example",
+      "name": "Sipho Khumalo"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "lawyer@sterlinglaw.example",
+      "name": "Sipho Khumalo"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "bob@familyoffice.example",
+        "name": "Bob Naidoo"
+      }
+    }
+  ],
+  "ccRecipients": [
+    {
+      "emailAddress": {
+        "address": "erin@familyoffice.example",
+        "name": "Erin Sithole"
+      }
+    }
+  ],
+  "internetMessageHeaders": []
+}

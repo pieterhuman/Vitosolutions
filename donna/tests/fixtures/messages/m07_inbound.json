@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m07a",
+  "internetMessageId": "<m07a@privatebank.example>",
+  "conversationId": "AAQk-c07",
+  "subject": "FX facility renewal",
+  "sentDateTime": "2026-07-01T08:50:00Z",
+  "receivedDateTime": "2026-07-01T08:50:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "frank@familyoffice.example",
+        "name": "Frank Joubert"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

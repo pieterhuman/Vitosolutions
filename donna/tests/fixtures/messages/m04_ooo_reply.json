@@ -1,0 +1,39 @@
+{
+  "id": "AAMk-m04b",
+  "internetMessageId": "<m04b@privatebank.example>",
+  "conversationId": "AAQk-c04",
+  "subject": "Automatic reply: Wire confirmation needed",
+  "sentDateTime": "2026-07-01T08:31:00Z",
+  "receivedDateTime": "2026-07-01T08:31:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "alice@familyoffice.example",
+        "name": "Alice Meyer"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "Auto-Submitted",
+      "value": "auto-replied"
+    },
+    {
+      "name": "X-Auto-Response-Suppress",
+      "value": "All"
+    }
+  ]
+}

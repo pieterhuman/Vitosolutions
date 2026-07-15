@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m01b",
+  "internetMessageId": "<m01b@familyoffice.example>",
+  "conversationId": "AAQk-c01",
+  "subject": "RE: Trust deed amendments",
+  "sentDateTime": "2026-07-01T09:15:00Z",
+  "receivedDateTime": "2026-07-01T09:15:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "alice@familyoffice.example",
+      "name": "Alice Meyer"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "alice@familyoffice.example",
+      "name": "Alice Meyer"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "lawyer@sterlinglaw.example",
+        "name": "Sipho Khumalo"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

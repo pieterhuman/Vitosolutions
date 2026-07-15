@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m04a",
+  "internetMessageId": "<m04a@familyoffice.example>",
+  "conversationId": "AAQk-c04",
+  "subject": "Wire confirmation needed",
+  "sentDateTime": "2026-07-01T08:30:00Z",
+  "receivedDateTime": "2026-07-01T08:30:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "alice@familyoffice.example",
+      "name": "Alice Meyer"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "alice@familyoffice.example",
+      "name": "Alice Meyer"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "banker@privatebank.example",
+        "name": "Marie du Toit"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

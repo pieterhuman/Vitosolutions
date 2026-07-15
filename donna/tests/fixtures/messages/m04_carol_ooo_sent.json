@@ -1,0 +1,35 @@
+{
+  "id": "AAMk-m04d",
+  "internetMessageId": "<m04d@familyoffice.example>",
+  "conversationId": "AAQk-c04b",
+  "subject": "Automatic reply: Invoice 8841 overdue",
+  "sentDateTime": "2026-07-01T08:36:00Z",
+  "receivedDateTime": "2026-07-01T08:36:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "carol@familyoffice.example",
+      "name": "Carol van Wyk"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "carol@familyoffice.example",
+      "name": "Carol van Wyk"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "vendor@supplies.example",
+        "name": "Vendor Desk"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "Auto-Submitted",
+      "value": "auto-replied"
+    }
+  ]
+}

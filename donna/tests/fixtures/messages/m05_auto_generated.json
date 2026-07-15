@@ -1,0 +1,35 @@
+{
+  "id": "AAMk-m05c",
+  "internetMessageId": "<m05c@updates.example>",
+  "conversationId": "AAQk-c05c",
+  "subject": "Statement ready",
+  "sentDateTime": "2026-07-01T08:42:00Z",
+  "receivedDateTime": "2026-07-01T08:42:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "dan@familyoffice.example",
+        "name": "Dan Botha"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "Auto-Submitted",
+      "value": "auto-generated"
+    }
+  ]
+}

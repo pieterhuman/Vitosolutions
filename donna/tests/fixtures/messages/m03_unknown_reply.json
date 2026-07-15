@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m03b",
+  "internetMessageId": "<m03b@elsewhere.example>",
+  "conversationId": "AAQk-c03",
+  "subject": "RE: Property transfer",
+  "sentDateTime": "2026-07-01T11:00:00Z",
+  "receivedDateTime": "2026-07-01T11:00:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "unknown@elsewhere.example",
+      "name": "Somebody Else"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "unknown@elsewhere.example",
+      "name": "Somebody Else"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "alice@familyoffice.example",
+        "name": "Alice Meyer"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

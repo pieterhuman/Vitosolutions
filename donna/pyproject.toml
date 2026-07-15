@@ -1,0 +1,13 @@
+[project]
+name = "donna-minimal"
+version = "0.1.0"
+description = "Set-and-forget mailbox follow-up system for a Microsoft 365 family office. No LLM in the decision path."
+requires-python = ">=3.11"
+dependencies = [
+    "SQLAlchemy>=2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

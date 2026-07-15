@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m03a",
+  "internetMessageId": "<m03a@sterlinglaw.example>",
+  "conversationId": "AAQk-c03",
+  "subject": "Property transfer",
+  "sentDateTime": "2026-07-01T08:20:00Z",
+  "receivedDateTime": "2026-07-01T08:20:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "lawyer@sterlinglaw.example",
+      "name": "Sipho Khumalo"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "lawyer@sterlinglaw.example",
+      "name": "Sipho Khumalo"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "alice@familyoffice.example",
+        "name": "Alice Meyer"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

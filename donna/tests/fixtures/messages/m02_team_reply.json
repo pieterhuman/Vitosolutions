@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m02b",
+  "internetMessageId": "<m02b@familyoffice.example>",
+  "conversationId": "AAQk-c02",
+  "subject": "RE: Q3 portfolio rebalance",
+  "sentDateTime": "2026-07-01T10:00:00Z",
+  "receivedDateTime": "2026-07-01T10:00:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "bob@familyoffice.example",
+      "name": "Bob Naidoo"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "bob@familyoffice.example",
+      "name": "Bob Naidoo"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "banker@privatebank.example",
+        "name": "Marie du Toit"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

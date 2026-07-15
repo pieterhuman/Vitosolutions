@@ -1,0 +1,35 @@
+{
+  "id": "AAMk-m05d",
+  "internetMessageId": "<m05d@updates.example>",
+  "conversationId": "AAQk-c05d",
+  "subject": "Portal notification",
+  "sentDateTime": "2026-07-01T08:43:00Z",
+  "receivedDateTime": "2026-07-01T08:43:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "dan@familyoffice.example",
+        "name": "Dan Botha"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "X-Auto-Response-Suppress",
+      "value": "OOF, DR, RN, NRN"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m08c",
+  "internetMessageId": "<m08c@numbers.example>",
+  "conversationId": "AAQk-c08",
+  "subject": "Antw: Lease agreement",
+  "sentDateTime": "2026-07-01T10:30:00Z",
+  "receivedDateTime": "2026-07-01T10:30:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "accountant@numbers.example",
+      "name": "Thabo Mokoena"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "accountant@numbers.example",
+      "name": "Thabo Mokoena"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "alice@familyoffice.example",
+        "name": "Alice Meyer"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

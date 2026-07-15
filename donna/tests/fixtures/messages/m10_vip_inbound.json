@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m10a",
+  "internetMessageId": "<m10a@bigclient.example>",
+  "conversationId": "AAQk-c10",
+  "subject": "Term sheet decision needed",
+  "sentDateTime": "2026-07-01T08:00:00Z",
+  "receivedDateTime": "2026-07-01T08:00:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "vip@bigclient.example",
+      "name": "Key Client"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "vip@bigclient.example",
+      "name": "Key Client"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "ceo@familyoffice.example",
+        "name": "Nomsa Dlamini"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

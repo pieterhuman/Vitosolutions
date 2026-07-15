@@ -1,0 +1,35 @@
+{
+  "id": "AAMk-m05b",
+  "internetMessageId": "<m05b@updates.example>",
+  "conversationId": "AAQk-c05b",
+  "subject": "Rates snapshot",
+  "sentDateTime": "2026-07-01T08:41:00Z",
+  "receivedDateTime": "2026-07-01T08:41:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "dan@familyoffice.example",
+        "name": "Dan Botha"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "Precedence",
+      "value": "bulk"
+    }
+  ]
+}

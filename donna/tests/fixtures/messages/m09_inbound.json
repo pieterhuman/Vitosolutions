@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m09a",
+  "internetMessageId": "<m09a@privatebank.example>",
+  "conversationId": "AAQk-c09",
+  "subject": "KYC refresh documents",
+  "sentDateTime": "2026-07-01T09:10:00Z",
+  "receivedDateTime": "2026-07-01T09:10:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "banker@privatebank.example",
+      "name": "Marie du Toit"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "erin@familyoffice.example",
+        "name": "Erin Sithole"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

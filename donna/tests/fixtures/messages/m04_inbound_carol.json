@@ -1,0 +1,30 @@
+{
+  "id": "AAMk-m04c",
+  "internetMessageId": "<m04c@supplies.example>",
+  "conversationId": "AAQk-c04b",
+  "subject": "Invoice 8841 overdue",
+  "sentDateTime": "2026-07-01T08:35:00Z",
+  "receivedDateTime": "2026-07-01T08:35:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "vendor@supplies.example",
+      "name": "Vendor Desk"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "vendor@supplies.example",
+      "name": "Vendor Desk"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "carol@familyoffice.example",
+        "name": "Carol van Wyk"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": []
+}

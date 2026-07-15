@@ -1,0 +1,35 @@
+{
+  "id": "AAMk-m05a",
+  "internetMessageId": "<m05a@updates.example>",
+  "conversationId": "AAQk-c05a",
+  "subject": "Weekly market wrap",
+  "sentDateTime": "2026-07-01T08:40:00Z",
+  "receivedDateTime": "2026-07-01T08:40:00Z",
+  "from": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "sender": {
+    "emailAddress": {
+      "address": "news@updates.example",
+      "name": "Market Update"
+    }
+  },
+  "toRecipients": [
+    {
+      "emailAddress": {
+        "address": "dan@familyoffice.example",
+        "name": "Dan Botha"
+      }
+    }
+  ],
+  "ccRecipients": [],
+  "internetMessageHeaders": [
+    {
+      "name": "List-Unsubscribe",
+      "value": "<mailto:leave@updates.example>"
+    }
+  ]
+}
