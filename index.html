@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Travel Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.45), 0 0 18px rgba(34, 211, 238, 0.15); }
+      50%      { box-shadow: 0 0 12px rgba(34, 211, 238, 0.8), 0 0 32px rgba(34, 211, 238, 0.3); }
+    }
+    @keyframes tool-shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .status-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+    .tool-pill {
+      background: linear-gradient(110deg, rgba(15,23,42,0.9) 40%, rgba(34,211,238,0.18) 50%, rgba(15,23,42,0.9) 60%);
+      background-size: 200% 100%;
+      animation: tool-shimmer 2.2s linear infinite;
+    }
+    .spin-slow { animation: spin-slow 1.6s linear infinite; }
+    .glass { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-6"
+      style="background-image: radial-gradient(ellipse at 20% 0%, rgba(8,145,178,0.12), transparent 50%), radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.08), transparent 50%);">
+
+  <!-- App Shell -->
+  <div class="w-full max-w-md h-screen sm:h-[850px] sm:max-h-[92vh] flex flex-col glass sm:rounded-3xl border border-slate-700/60 shadow-2xl shadow-cyan-500/5 overflow-hidden">
+
+    <!-- ===== Header ===== -->
+    <header class="flex items-center justify-between px-4 py-3 border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+          <i data-lucide="plane" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold tracking-tight leading-none">Claude Travel Agent</h1>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="status-glow inline-flex items-center gap-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 text-[10px] font-medium text-cyan-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              Powered by Claude Max
+            </span>
+          </div>
+        </div>
+      </div>
+      <span class="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 px-2.5 py-1 text-[10px] font-semibold text-amber-300 uppercase tracking-wider">
+        <i data-lucide="zap" class="w-3 h-3"></i>
+        Pro Mode
+      </span>
+    </header>
+
+    <!-- ===== Conversation Feed ===== -->
+    <main class="flex-1 overflow-y-auto px-4 py-5 space-y-5">
+
+      <!-- User Message Bubble -->
+      <div class="flex justify-end">
+        <div class="max-w-[85%] rounded-2xl rounded-br-sm bg-gradient-to-br from-cyan-600 to-blue-600 px-4 py-3 text-sm shadow-lg shadow-blue-600/20">
+          Find me the cheapest way to get to Tokyo. I'm flexible on dates — optimize for off-season savings.
+        </div>
+      </div>
+
+      <!-- Tool Call Indicator -->
+      <div class="flex justify-start">
+        <div class="tool-pill inline-flex items-center gap-2 rounded-full border border-cyan-500/30 px-3.5 py-2 text-xs font-mono text-cyan-300">
+          <i data-lucide="loader-2" class="w-3.5 h-3.5 spin-slow text-cyan-400"></i>
+          <span class="text-slate-400">tool</span>
+          <span>search_flights(<span class="text-emerald-400">flexible_off_season=true</span>)</span>
+        </div>
+      </div>
+
+      <!-- Agent Dashboard Widget Card -->
+      <div class="flex justify-start">
+        <div class="w-full max-w-[95%] rounded-2xl rounded-bl-sm border border-slate-700/70 bg-slate-900/80 backdrop-blur-md shadow-xl overflow-hidden">
+
+          <!-- Card header + Off-Season Toggle -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+              <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+              Trip Optimizer — Tokyo
+            </div>
+            <button id="offSeasonToggle" onclick="toggleOffSeason()"
+              class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all duration-300 border-emerald-500/50 bg-emerald-500/15 text-emerald-300 shadow-md shadow-emerald-500/20">
+              <i data-lucide="leaf" class="w-3.5 h-3.5"></i>
+              Off-Peak Savings: <span id="toggleState">ON</span>
+            </button>
+          </div>
+
+          <div class="p-4 space-y-3">
+
+            <!-- Weather Widget -->
+            <div class="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <i id="weatherIcon" data-lucide="cloud-snow" class="w-8 h-8 text-cyan-300"></i>
+                <div>
+                  <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Tokyo Weather</p>
+                  <p class="text-sm font-semibold"><span id="weatherTemp">8°C</span> · <span id="weatherCondition">Crisp &amp; Clear</span></p>
+                </div>
+              </div>
+              <span id="seasonTag" class="rounded-full bg-cyan-500/15 border border-cyan-500/40 px-2.5 py-1 text-[10px] font-semibold text-cyan-300">
+                February · Off-Season
+              </span>
+            </div>
+
+            <!-- Flight Widget -->
+            <div class="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                    <i data-lucide="plane-takeoff" class="w-4 h-4 text-blue-400"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold tracking-wide">JFK <span class="text-slate-500">→</span> NRT</p>
+                    <p class="text-[11px] text-slate-500">ANA · NH 0109 · Non-stop</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-base font-bold text-emerald-400">$<span id="flightPrice">290</span></p>
+                  <p id="flightStandard" class="text-[11px] text-slate-500 line-through">$450 standard</p>
+                </div>
+              </div>
+              <div class="mt-2 flex items-center gap-2">
+                <span id="flightTag" class="rounded-full bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">Best Value</span>
+                <span class="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">14h 05m</span>
+              </div>
+            </div>
+
+            <!-- Hotel Widget -->
+            <div class="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                    <i data-lucide="hotel" class="w-4 h-4 text-amber-400"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold">Shinjuku Granbell</p>
+                    <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                      <i data-lucide="star" class="w-3 h-3 text-amber-400"></i> 4.6 · Shinjuku, Tokyo
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-base font-bold text-emerald-400">$<span id="hotelPrice">84</span><span class="text-[11px] font-normal text-slate-500">/night</span></p>
+                  <p id="hotelStandard" class="text-[11px] text-slate-500 line-through">$120/night</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <span id="hotelTag" class="rounded-full bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">30% Off-Peak Rate</span>
+              </div>
+            </div>
+
+            <!-- Total Savings Banner -->
+            <div id="savingsBanner" class="flex items-center justify-between rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 to-cyan-500/10 px-4 py-3 transition-all duration-300">
+              <div class="flex items-center gap-2">
+                <i data-lucide="piggy-bank" class="w-5 h-5 text-emerald-400"></i>
+                <p class="text-xs font-semibold text-emerald-300">Total Off-Peak Savings</p>
+              </div>
+              <p class="text-lg font-extrabold text-emerald-400">$<span id="totalSavings">196</span></p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ===== Input Area ===== -->
+    <footer class="px-4 py-3 border-t border-slate-800/80 bg-slate-900/70 backdrop-blur-md shrink-0">
+      <div class="flex items-center gap-2 rounded-2xl border border-slate-700/70 bg-slate-950/70 px-3 py-2 focus-within:border-cyan-500/60 focus-within:shadow-md focus-within:shadow-cyan-500/10 transition-all">
+        <i data-lucide="message-circle" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        <input type="text" value="Find cheap flights to Paris in April"
+               class="flex-1 bg-transparent text-sm placeholder-slate-500 focus:outline-none" />
+        <button class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 transition-transform shrink-0">
+          <i data-lucide="send" class="w-4 h-4 text-white"></i>
+        </button>
+      </div>
+      <p class="mt-2 text-center text-[10px] text-slate-600">Claude can make mistakes. Verify travel details before booking.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    const PRICING = {
+      offPeak: {
+        month: 'February', season: 'Off-Season',
+        weather: { temp: '8°C', condition: 'Crisp & Clear', icon: 'cloud-snow' },
+        flight: 290, flightStandard: 450,
+        hotel: 84, hotelStandard: 120,
+        flightTag: 'Best Value', hotelTag: '30% Off-Peak Rate',
+        savings: 196,
+      },
+      peak: {
+        month: 'October', season: 'Peak Season',
+        weather: { temp: '19°C', condition: 'Autumn Foliage', icon: 'sun' },
+        flight: 450, flightStandard: null,
+        hotel: 120, hotelStandard: null,
+        flightTag: 'Standard Fare', hotelTag: 'Peak Rate',
+        savings: 0,
+      },
+    };
+
+    let offSeasonOn = true;
+
+    function toggleOffSeason() {
+      offSeasonOn = !offSeasonOn;
+      const mode = offSeasonOn ? PRICING.offPeak : PRICING.peak;
+
+      document.getElementById('toggleState').textContent = offSeasonOn ? 'ON' : 'OFF';
+      const btn = document.getElementById('offSeasonToggle');
+      btn.classList.toggle('border-emerald-500/50', offSeasonOn);
+      btn.classList.toggle('bg-emerald-500/15', offSeasonOn);
+      btn.classList.toggle('text-emerald-300', offSeasonOn);
+      btn.classList.toggle('shadow-emerald-500/20', offSeasonOn);
+      btn.classList.toggle('border-slate-600', !offSeasonOn);
+      btn.classList.toggle('bg-slate-800/60', !offSeasonOn);
+      btn.classList.toggle('text-slate-400', !offSeasonOn);
+
+      document.getElementById('weatherTemp').textContent = mode.weather.temp;
+      document.getElementById('weatherCondition').textContent = mode.weather.condition;
+      const seasonTag = document.getElementById('seasonTag');
+      seasonTag.textContent = `${mode.month} · ${mode.season}`;
+      seasonTag.className = offSeasonOn
+        ? 'rounded-full bg-cyan-500/15 border border-cyan-500/40 px-2.5 py-1 text-[10px] font-semibold text-cyan-300'
+        : 'rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-1 text-[10px] font-semibold text-amber-300';
+
+      const weatherIcon = document.getElementById('weatherIcon');
+      weatherIcon.outerHTML = `<i id="weatherIcon" data-lucide="${mode.weather.icon}" class="w-8 h-8 ${offSeasonOn ? 'text-cyan-300' : 'text-amber-300'}"></i>`;
+
+      document.getElementById('flightPrice').textContent = mode.flight;
+      document.getElementById('flightStandard').style.display = offSeasonOn ? '' : 'none';
+      const flightTag = document.getElementById('flightTag');
+      flightTag.textContent = mode.flightTag;
+      flightTag.className = offSeasonOn
+        ? 'rounded-full bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-300'
+        : 'rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[10px] font-semibold text-slate-400';
+
+      document.getElementById('hotelPrice').textContent = mode.hotel;
+      document.getElementById('hotelStandard').style.display = offSeasonOn ? '' : 'none';
+      const hotelTag = document.getElementById('hotelTag');
+      hotelTag.textContent = mode.hotelTag;
+      hotelTag.className = flightTag.className;
+
+      const banner = document.getElementById('savingsBanner');
+      banner.style.display = offSeasonOn ? '' : 'none';
+      document.getElementById('totalSavings').textContent = mode.savings;
+
+      lucide.createIcons();
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
