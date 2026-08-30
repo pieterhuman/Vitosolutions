@@ -1,0 +1,187 @@
+# Source of truth for Apollo sequence copy + timing.
+# `vicky sync-sequences` pushes this file into Apollo (create if missing,
+# declarative update if present). Merge variables {{first_name}}, {{company}},
+# {{title}} are resolved by Apollo at send time.
+#
+# Copy rules (enforced by guardrails.spam_language_check):
+#   - bodies 25–85 words, one CTA, no spam-trigger phrasing, no links in step 1
+#   - subjects <= 9 words
+#   - follow-up emails reply in-thread (empty subject)
+
+primary:
+  name: "Vicky A — Data/AI Capacity (US ET 50-500)"
+  goal: "Cold outbound to ICP engineering/data leaders; land a discovery call."
+  steps:
+    - type: auto_email
+      day: 0
+      wait_time: 0
+      subject: "Data/AI capacity for {{company}}"
+      body: |
+        Hi {{first_name}},
+
+        Most data/AI leaders I talk to have a backlog problem, not a
+        headcount-approval problem — the roadmap slips while reqs sit open
+        for months.
+
+        We place senior data & AI engineers (pipelines, ML platforms, LLM
+        apps) who work US Eastern hours and slot into a team in under two
+        weeks — no long-term commitment.
+
+        Worth a look at 2–3 profiles relevant to {{company}}?
+
+        Vicky
+    - type: linkedin_step_connect
+      day: 1
+      wait_time: 1
+      note: "Send LinkedIn connection request within 48h of the first email."
+      body: |
+        Hi {{first_name}} — I work with engineering leaders at teams like
+        {{company}} on senior data/AI engineering capacity (US Eastern
+        hours). Sent you a short note by email; good to connect here too.
+        — Vicky
+    - type: auto_email
+      day: 2
+      wait_time: 1
+      thread: reply
+      body: |
+        Hi {{first_name}} — one pattern from teams around {{company}}'s
+        size: the fastest movers run hiring and augmentation as parallel
+        tracks. They keep recruiting for the perm role, and drop in a
+        senior contract engineer now so the roadmap doesn't wait on the
+        pipeline.
+
+        Happy to share how two teams structured it — usually a 2–4 week
+        paid pilot with clear success metrics. Useful?
+
+        Vicky
+    - type: linkedin_step_view_profile
+      day: 4
+      wait_time: 2
+      note: "Soft touch: view the prospect's LinkedIn profile (no message)."
+    - type: auto_email
+      day: 6
+      wait_time: 2
+      thread: reply
+      body: |
+        Hi {{first_name}} — direct version: we have a few strong data/AI
+        engineers coming available this month. All senior, all working US
+        Eastern hours.
+
+        If {{company}} has a data or AI initiative that's short on hands,
+        I can send 2–3 matching profiles today and hold one for a two-week
+        paid pilot.
+
+        Open to 20 minutes this week to see if there's a fit?
+
+        Vicky
+    - type: auto_email
+      day: 11
+      wait_time: 5
+      thread: reply
+      body: |
+        Hi {{first_name}} — closing the loop. If extra data/AI engineering
+        capacity isn't a priority at {{company}} right now, no problem —
+        I'll stop here.
+
+        If it's a timing thing, tell me when to check back and I will. And
+        if someone else owns this, a point in their direction would be
+        appreciated.
+
+        Either way — thanks for reading.
+
+        Vicky
+
+warm:
+  name: "Vicky B — Warm / Referral (Data-AI)"
+  goal: "Referral/intro or content-triggered leads; convert warmth into a call fast."
+  steps:
+    - type: auto_email
+      day: 0
+      wait_time: 0
+      subject: "{{first_name}} — following up on the intro"
+      body: |
+        Hi {{first_name}},
+
+        Following up on the intro — thanks for the opening.
+
+        Short version: we help teams like {{company}} add senior data & AI
+        engineers working US Eastern hours, usually inside two weeks. Most
+        engagements start with a 2–4 week paid pilot with agreed success
+        metrics, so there's no leap of faith.
+
+        I can send 2–3 profiles matched to your stack, or we can take 20
+        minutes — whichever is easier?
+
+        Vicky
+    - type: auto_email
+      day: 3
+      wait_time: 3
+      thread: reply
+      body: |
+        Hi {{first_name}} — quick nudge on this. If it's easier to react
+        to something concrete, I'll send over 2–3 anonymised profiles of
+        data/AI engineers we'd put forward for {{company}} — takes you two
+        minutes to scan. Want me to?
+
+        Vicky
+    - type: linkedin_step_message
+      day: 5
+      wait_time: 2
+      note: >-
+        Short LinkedIn message referencing the email thread. Only if
+        already connected; otherwise send a connection request first.
+      body: |
+        Hi {{first_name}} — sent you a couple of notes by email about
+        data/AI engineering capacity for {{company}}. No pressure at all,
+        but if it's relevant I'd love 20 minutes. If not, happy to leave
+        it here. — Vicky
+
+pilot:
+  name: "Vicky C — Pilot Conversion (Replied/Interested)"
+  goal: "Contacts who replied positively; send profiles and close a 2–4 week paid pilot."
+  steps:
+    - type: manual_email          # HUMAN REVIEW — agent drafts, human approves send
+      day: 0
+      wait_time: 0
+      review: true
+      note: >-
+        HUMAN REVIEW STEP. Personalize before sending: reference their
+        reply, attach/link 2-3 matching candidate profiles, and propose
+        2-3 ET-friendly call slots. The agent drafts this; a human
+        approves the send.
+      subject: "Profiles + a simple pilot for {{company}}"
+      body: |
+        Hi {{first_name}},
+
+        Thanks for the reply — here's the concrete version.
+
+        Attached are profiles of data/AI engineers who fit what
+        {{company}} is working on. All senior, all US Eastern hours,
+        available now.
+
+        The usual way in is a 2–4 week paid pilot: one engineer, a scoped
+        deliverable, success metrics we agree up front. If it works,
+        extend; if not, it ends there.
+
+        Happy to walk through the profiles — would any of these times
+        work? [SLOT 1] / [SLOT 2] / [SLOT 3] (ET)
+
+        Vicky
+    - type: auto_email
+      day: 3
+      wait_time: 3
+      thread: reply
+      body: |
+        Hi {{first_name}} — did the profiles land alright? If none of them
+        fit, tell me what's off (stack, seniority, domain) and I'll send a
+        better-matched set this week. And if a call is easier than email,
+        my calendar link is in my signature.
+
+        Vicky
+    - type: call
+      day: 6
+      wait_time: 3
+      note: >-
+        Call the prospect if no response to the profiles email. Goal: book
+        the discovery call or get a direct yes/no on the pilot. Keep it
+        under 5 minutes; reference the profiles already sent.

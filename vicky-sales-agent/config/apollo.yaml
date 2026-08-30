@@ -1,0 +1,26 @@
+# Live Apollo object IDs for this workspace.
+# These were created/verified on 2026-08-30 via the Apollo connector.
+# `vicky sync-sequences` keeps the sequences aligned with config/templates/sequences.yaml
+# and refreshes this file's step/template IDs.
+
+emailer_schedule_id: "6645d582c54e590348800094"   # "Normal Business Hours", use_contacts_time_zone: true
+
+# Sending mailbox. EMPTY until vicky@getunicornclub.com is linked in Apollo
+# (Settings -> Mailboxes -> Link mailbox -> Google). Run `vicky doctor` after
+# linking to resolve and store the ID automatically. Enrollment is blocked
+# while this is null.
+send_email_account_id: null
+
+sequences:
+  primary:
+    id: "6a93ae0856f8df000c2b3bf4"
+    name: "Vicky A — Data/AI Capacity (US ET 50-500)"
+    active: false
+  warm:
+    id: "6a93ae1a8c61790018bdd8cf"
+    name: "Vicky B — Warm / Referral (Data-AI)"
+    active: false
+  pilot:
+    id: "6a93ae2c3e84d9000cb5ff7d"
+    name: "Vicky C — Pilot Conversion (Replied/Interested)"
+    active: false

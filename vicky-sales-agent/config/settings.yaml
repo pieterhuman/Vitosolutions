@@ -1,0 +1,125 @@
+# Vicky Sales Agent — operating configuration.
+# Everything here is safe to edit; the agent reloads it on every run.
+
+identity:
+  name: "Vicky Steyn"
+  role: "Business Development Manager"
+  email: "vicky@getunicornclub.com"
+  company: "Unicorn Club"
+  calendar_timezone: "America/New_York"
+
+# ------------------------------------------------------------------ ICP ------
+icp:
+  employee_range: [50, 500]
+  # Sweet spot gets max score; edges of employee_range score lower.
+  employee_sweet_spot: [100, 300]
+  locations:
+    - "United States"
+  # States with native ET overlap get a scoring bonus.
+  eastern_states:
+    ["New York", "Massachusetts", "Florida", "Georgia", "North Carolina",
+     "Virginia", "Pennsylvania", "New Jersey", "Connecticut", "Maryland",
+     "Washington, D.C.", "Ohio", "Michigan", "South Carolina", "Tennessee"]
+  titles:
+    - "VP Engineering"
+    - "VP of Engineering"
+    - "CTO"
+    - "Chief Technology Officer"
+    - "Head of Data"
+    - "Head of AI"
+    - "Head of Machine Learning"
+    - "Director of Engineering"
+    - "Director of Data"
+    - "Engineering Manager"
+    - "Data Engineering Manager"
+    - "ML Engineering Manager"
+  # Keywords in job postings / descriptions that indicate live signals.
+  signal_keywords:
+    ["data engineer", "machine learning", "ml engineer", "ai engineer",
+     "data platform", "llm", "genai", "generative ai", "mlops", "analytics engineer"]
+  # Apollo search keywords for account discovery.
+  account_keywords: ["data platform", "AI", "machine learning", "analytics"]
+
+# --------------------------------------------------------- daily volumes -----
+volumes:
+  max_emails_per_day: 40            # hard cap on NEW enrollments that trigger email step 1
+  max_linkedin_touches_per_day: 50  # LinkedIn tasks surfaced to the human per day
+  max_new_leads_per_day: 60         # sourced + scored, not necessarily enrolled
+  warmup:
+    enabled: true
+    start_per_day: 15               # first-day enrollment cap
+    increment_per_day: 5            # added each weekday until max_emails_per_day
+  pipeline_target_accounts: [80, 150]  # keep the active account pool in this band
+
+# -------------------------------------------------------------- scoring ------
+scoring:
+  # Score 0–100. enroll_threshold gates sequence enrollment.
+  enroll_threshold: 60
+  weights:
+    title_exact: 30        # title matches icp.titles
+    title_partial: 15      # seniority word match (VP/Head/Director/CTO/Manager + data/ai/eng)
+    size_sweet_spot: 20
+    size_in_range: 10
+    et_state: 15
+    us_remote: 8
+    hiring_signal: 15      # currently posting data/AI roles
+    funding_signal: 15     # raised within lookback window
+    tech_signal: 10        # AI/ML/data keywords on the account
+  funding_lookback_days: 365
+
+# ------------------------------------------------------------ sequences ------
+# Live Apollo IDs are in config/apollo.yaml. Names must match Apollo exactly.
+sequences:
+  primary: "Vicky A — Data/AI Capacity (US ET 50-500)"
+  warm: "Vicky B — Warm / Referral (Data-AI)"
+  pilot: "Vicky C — Pilot Conversion (Replied/Interested)"
+
+# ------------------------------------------------------------- nurture -------
+nurture:
+  reengage_after_days: 35           # re-engage finished/no-reply leads after 4–6 weeks
+  not_now_snooze_days: 42
+  referral_ask_after_positive: true
+
+# ------------------------------------------------------------- replies -------
+replies:
+  poll_gmail: true
+  gmail_imap_host: "imap.gmail.com"
+  gmail_smtp_host: "smtp.gmail.com"
+  gmail_smtp_port: 587
+  lookback_days: 4                  # how far back to scan the inbox each run
+  # Classifications that ALWAYS require human approval before any response:
+  human_review_classes: ["meeting_request", "interested", "objection"]
+  auto_actions:
+    unsubscribe: true               # immediate, never needs approval
+    not_now: true                   # snooze + nurture, no outbound send
+
+# ------------------------------------------------------------- booking -------
+booking:
+  auto_book: false                  # false = every calendar invite needs human approval
+  slot_length_minutes: 30
+  slots_to_propose: 3
+  # Windows in ET within which discovery calls are proposed.
+  windows_et: [["09:30", "12:00"], ["13:00", "16:30"]]
+  min_notice_hours: 20
+  days_ahead: 5
+
+# ----------------------------------------------------------------- llm -------
+llm:
+  model: "claude-opus-5"
+  classify_max_tokens: 1000
+  draft_max_tokens: 2000
+
+# ----------------------------------------------------------- guardrails ------
+guardrails:
+  weekdays_only: true
+  # Never enroll or message anyone matching these (emails or domains):
+  suppression_domains: ["getunicornclub.com", "vitosolutions.co.za"]
+  spam_language_check: true
+  # If bounce or spam-block rate over the trailing window exceeds these, auto-pause.
+  max_bounce_rate: 0.03
+  max_spam_block_rate: 0.01
+  stats_window_days: 7
+
+reporting:
+  daily_summary_to: "pieter.human@vitosolutions.co.za"
+  send_email_summary: false         # true requires GMAIL_APP_PASSWORD in .env

@@ -1,0 +1,88 @@
+# LLM prompt library. Python `str.format`-style placeholders are filled by
+# agent/llm.py. Keep the persona block stable — it is the cache-friendly prefix.
+
+persona: |
+  You are drafting on behalf of Vicky Steyn, a senior Business Development
+  Manager at Unicorn Club (vicky@getunicornclub.com). Unicorn Club places
+  senior data & AI engineers (data pipelines, ML platforms, LLM
+  applications) into US companies on a team-augmentation basis. Engineers
+  work US Eastern hours and can start within two weeks. The standard entry
+  offer is a 2–4 week paid pilot with agreed success metrics.
+
+  Voice: professional, warm, direct, zero fluff. Short sentences. No
+  buzzwords, no exclamation marks, no "I hope this finds you well", no
+  spam-trigger phrasing (free, guarantee, limited time, act now). Emails
+  are 25–85 words unless replying to a detailed question.
+
+classify_reply: |
+  Classify this email reply from a sales prospect. Respond with ONLY a JSON
+  object, no other text:
+  {{"classification": "<interested|meeting_request|objection|not_now|unsubscribe|out_of_office|referral|other>",
+    "objection_key": "<key from the objection list, or null>",
+    "sentiment": "<positive|neutral|negative>",
+    "summary": "<one sentence>",
+    "requires_human": <true|false>}}
+
+  Rules:
+  - "unsubscribe": any request to stop contact, however phrased. Always wins.
+  - "meeting_request": they propose or ask for a call/meeting/times.
+  - "interested": positive engagement short of proposing a meeting
+    (asking for profiles, rates, details).
+  - "objection": a reason not to proceed. Pick the best objection_key
+    from: {objection_keys}. If none fits, use null and set requires_human true.
+  - "not_now": explicit timing deferral without rejection.
+  - "referral": points to a different person who owns this.
+  - requires_human is true for: meeting_request, interested, any objection
+    with null key, anything angry/legal/complex, or any reply from a
+    C-level title.
+
+  Prospect: {first_name} {last_name}, {title} at {company}
+  Our last email to them (step {step}): {last_email}
+
+  Their reply:
+  ---
+  {reply_body}
+  ---
+
+draft_reply: |
+  Write Vicky's email reply to this prospect. Output ONLY the email body,
+  no subject, no signature (it is appended automatically).
+
+  Context:
+  - Prospect: {first_name} {last_name}, {title} at {company}
+  - Their reply was classified as: {classification}
+  - Conversation summary: {summary}
+  - Pipeline stage: {stage}
+  {objection_block}
+  {slots_block}
+
+  Requirements:
+  - Ground the reply in the pre-approved script above if one was given;
+    adapt wording to their message, do not copy verbatim.
+  - If proposing times, offer exactly the slots listed, in ET, and say
+    you will send a calendar invite once they pick.
+  - If they asked for profiles, say 2–3 matched profiles will follow in a
+    separate email today.
+  - 40–120 words. One clear next step. Plain text.
+
+  Their message:
+  ---
+  {reply_body}
+  ---
+
+personalize_opener: |
+  Write ONE opening sentence (max 25 words) for a cold email to
+  {first_name}, {title} at {company}. Ground it in exactly one of these
+  facts — pick the strongest, mention it specifically, no flattery:
+  - Company: {company}, ~{employee_count} employees, {industry}
+  - Signals: {signals}
+
+  It must read as something a human BDM noticed, not a template. Output
+  only the sentence.
+
+referral_ask: |
+  Write a two-sentence referral request from Vicky to {first_name} at
+  {company}, who just had a positive interaction with us
+  ({context}). Ask if there's one person in their network who runs a
+  data/AI team that's stretched thin. Warm, zero pressure, plain text,
+  output only the message body.

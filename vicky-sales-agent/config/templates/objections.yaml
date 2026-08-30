@@ -1,0 +1,72 @@
+# Pre-approved objection handling scripts. The reply drafter must ground its
+# draft in exactly one of these when the reply is classified as an objection.
+# If no script fits, the reply is escalated to human review instead of improvised.
+
+no_budget:
+  triggers: ["budget", "can't afford", "too expensive", "cost", "headcount frozen"]
+  response: |
+    Completely fair — most teams we work with didn't have a line item for
+    this either. That's actually why we lead with a 2–4 week paid pilot:
+    it's a small, capped spend against a specific deliverable, not a
+    headcount commitment. If the pilot pays for itself, extend; if not,
+    stop. Would it help if I sent the typical pilot scope and pricing so
+    you can see the actual number?
+  next: "continue"       # keep in sequence / thread open
+
+using_agency:
+  triggers: ["already work with", "have an agency", "existing vendor", "preferred supplier"]
+  response: |
+    Makes sense — no ask to replace them. Where we usually fit alongside
+    an existing vendor is speed on the data/AI-specific roles: senior
+    pipeline/ML/LLM engineers in under two weeks, ET hours. Happy to be
+    the bench you compare them against next time a role sits open too
+    long. Can I send a couple of profiles so you know what's available?
+  next: "continue"
+
+hiring_internally:
+  triggers: ["hiring", "in-house", "full-time", "perm role", "building the team"]
+  response: |
+    That's the right long-term move — we'd never argue against it. The
+    teams that move fastest run both tracks: keep the perm search going,
+    and use a senior contract engineer now so the roadmap doesn't wait
+    the 3–4 months a good data/AI hire takes. When the hire lands, we
+    roll off. Want to see 2–3 profiles that could bridge the gap?
+  next: "continue"
+
+not_now:
+  triggers: ["not right now", "maybe later", "next quarter", "circle back", "check back"]
+  response: |
+    No problem at all — timing is everything. I'll check back in {{when}}.
+    If anything changes sooner (a role opens, a project lands), you know
+    where I am. Thanks {{first_name}}.
+  next: "nurture"        # snooze; re-engage per nurture.not_now_snooze_days
+
+no_remote:
+  triggers: ["on-site", "onsite", "in office", "no remote", "local only"]
+  response: |
+    Understood. For what it's worth, all our engineers work full US
+    Eastern business hours with daily overlap on video — several clients
+    started with the same policy and treated the pilot as the test of
+    whether it works in practice. If a 2-week trial against a real
+    deliverable would settle it, I'm happy to set that up. If it's a hard
+    policy, I'll leave you be.
+  next: "continue"
+
+quality_doubt:
+  triggers: ["offshore", "quality", "burned before", "bad experience", "contractors didn't work"]
+  response: |
+    That's exactly the risk the pilot exists to remove. You get one named
+    senior engineer (CV and interview first — you say no to anyone), a
+    scoped deliverable, and agreed success metrics. If the work isn't
+    strong, you've capped the downside at two weeks. Would seeing two
+    profiles and a sample pilot scope help you judge?
+  next: "continue"
+
+send_info:
+  triggers: ["send info", "send details", "more information", "send me something"]
+  response: |
+    Happy to. So I don't send a generic PDF: are you thinking data
+    engineering (pipelines/platform), ML/AI (models, LLM apps), or both?
+    I'll send 2–3 matching profiles plus the one-page pilot outline —
+    takes two minutes to read.
+  next: "continue"
